@@ -3,5 +3,6 @@ examtopics_output.html
 examtopics_output.pdf
 *.txt
 env/
+!env/*.md
 !examples/*
 results
