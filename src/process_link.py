@@ -2,8 +2,8 @@ import csv
 
 # Read the .txt file
 
-source = 'google'
-with open(f'../env/{source}-link.txt', 'r') as f:
+source = 'pmi'
+with open(f'../results/link/{source}-link.txt', 'r') as f:
     lines = f.readlines()
 
 # Platform to prefix mapping
