@@ -8,3 +8,10 @@ env/
 data/*.md
 data/
 source-local/
+.vscode/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+.idea/
+examtopics-data*
