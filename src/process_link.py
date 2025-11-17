@@ -2,7 +2,7 @@ import csv
 
 # Read the .txt file
 
-source = 'pmi'
+source = 'oracle'
 with open(f'../results/link/{source}-link.txt', 'r') as f:
     lines = f.readlines()
 
@@ -54,9 +54,9 @@ for line in lines:
     data.append([platform, title, code, slug, url])
 
 # Write to CSV
-with open(f'../src/{source}_cert.csv', 'w', newline='') as csvfile:
+with open(f'../source-local/{source}_cert.csv', 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
     writer.writerow(['Platform', 'Certification Title', 'Certification Code', 'Certification Slug', 'Certification link'])
     writer.writerows(data)
 
-print(f"CSV file '../src/{source}_cert.csv' created successfully.")
+print(f"CSV file '../source-local/{source}_cert.csv' created successfully.")
