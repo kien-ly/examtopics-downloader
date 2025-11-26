@@ -32,8 +32,8 @@ def remove_timestamp_and_links(input_file, output_file):
     return removed_count
 
 # Sử dụng
-input_file = '/Users/kien.ly/Library/CloudStorage/OneDrive-BangkokSolution/my-project/examtopics-downloader/results/raw/del_url/clf-c02.md'
-output_file = '/Users/kien.ly/Library/CloudStorage/OneDrive-BangkokSolution/my-project/examtopics-downloader/results/raw/del_url/clf-c02-cleaned.md'
+input_file = '/Users/kien.ly/Library/CloudStorage/OneDrive-BangkokSolution/my-project/examtopics-downloader/data/raw/azure/dp-700.md'
+output_file = '/Users/kien.ly/Library/CloudStorage/OneDrive-BangkokSolution/my-project/examtopics-downloader/data/silver/azure/dp-700-cleaned.md'
 
 print(f"Input file: {input_file}")
 print(f"Output file: {output_file}")

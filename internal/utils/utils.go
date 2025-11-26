@@ -44,6 +44,15 @@ func (f *AutoCloseFile) Close() {
 }
 
 func CreateFile(filename string) *AutoCloseFile {
+	// Ensure the directory exists
+	dir := path.Dir(filename)
+	if dir != "." {
+		err := os.MkdirAll(dir, 0755)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	file, err := os.Create(filename)
 	if err != nil {
 		panic(err)

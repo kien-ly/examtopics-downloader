@@ -20,6 +20,7 @@ func main() {
 	saveUrls := flag.Bool("save-links", false, "Optional argument to save unique links to questions")
 	noCache := flag.Bool("no-cache", false, "Optional argument, set to disable looking through cached data on github")
 	token := flag.String("t", "", "Optional argument to make cached requests faster to gh api")
+	outputSaveLinks := flag.String("output-save-links", "saved-links.txt", "Optional path for saving links")
 	flag.Parse()
 
 	if *examsFlag {
@@ -48,7 +49,7 @@ func main() {
 	links := fetch.GetAllPages(*provider, *grepStr)
 
 	if *saveUrls {
-		utils.SaveLinks("saved-links.txt", links)
+		utils.SaveLinks(*outputSaveLinks, links)
 	}
 	utils.WriteData(links, *outputPath, *commentBool, *fileType)
 	fmt.Printf("Successfully saved output to %s (filetype: %s).\n", *outputPath, *fileType)
