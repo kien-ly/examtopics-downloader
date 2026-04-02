@@ -1,247 +1,162 @@
-# Exam Topics Downloader
+# ExamTopics Downloader
 
-This repo aims to make it possible for you to obtain all the exam questions from the examtopics website (which is paywalled).
+The **ExamTopics Downloader** is a high-performance, concurrent scraping tool designed to programmatically fetch, consolidate, and export examination questions from the ExamTopics platform (which is otherwise paywalled and heavily restricted). It supports both single-exam fetching and large-scale batch processing.
 
-## Setting it Up
+## 🚀 Key Features
 
-### Using docker
+- **High Concurrency & Efficiency**: Uses worker pools to scrape multiple pages simultaneously to maximize throughput.
+- **Smart Fetching Strategies**: 
+  - **GitHub Data Cache**: Instantly retrieves previously fetched exams from a dedicated GitHub repository to avoid rate-limiting.
+  - **Pre-fetched Links Caching**: For batch operations, it scans a provider's database once, drastically reducing HTTP requests and API overhead by up to 95%.
+  - **Manual Fallback**: Automatically falls back to full scraping for new or uncached exams.
+- **Multiple Supported Formats**: Export data cleanly into Markdown (`.md`), HTML (`.html`), PDF (`.pdf`), or Plain Text (`.txt`).
+- **Comprehensive Exporter**: Captures questions, suggested answers, timestamps, and optionally, all user discussion comments.
 
-1. Make sure [docker](https://docs.docker.com/engine/install/) is installed on your system.
-2. Pull the docker image:
+---
+
+## 🛠️ Setup & Installation
+
+### Option 1: Using Docker (Recommended)
+
+1. Ensure [Docker](https://docs.docker.com/engine/install/) is installed on your system.
+2. Pull and run the image:
 
 ```bash
 docker pull ghcr.io/thatonecodes/examtopics-downloader:latest
-```
 
-3\. Run the container:
-
-```bash
 docker run -it \
   --name examtopics-downloader \
   ghcr.io/thatonecodes/examtopics-downloader:latest \
   -p google -s devops \
   -save-links -o output.md
+
+# Extract your files
 docker cp examtopics-downloader:/app/output.md .
 docker cp examtopics-downloader:/app/saved-links.txt .
 docker rm examtopics-downloader
 ```
 
 > [!NOTE]  
-> If seeing `exec: format exec error` or warnings about unsuportted platforms, if you are on `linux/arm64`, modify the docker cmd to:
+> If you are on `linux/arm64` and see `exec: format exec error`, append `--platform linux/arm64` to your `docker run` command.
+
+### Option 2: Building from Source
+
+1. Install [Golang >= 1.24](https://go.dev/doc/install).
+2. Clone the repository:
+   ```bash
+   git clone https://github.com/thatonecodes/examtopics-downloader.git
+   cd examtopics-downloader
+   ```
+
+---
+
+## 📖 Usage Guide
+
+There are two primary modes of operation: **Single Exam Downloader** and **Batch Downloader**.
+
+### 1. Single Exam Downloader (`main.go`)
+
+Used for quickly downloading questions for a specific exam or keyword.
 
 ```bash
-docker run -it \
-  --name examtopics-downloader \
-  --platform linux/arm64 \
-  ghcr.io/thatonecodes/examtopics-downloader:latest \
-  -p google -s devops \
-  -save-links -o output.md
-docker cp examtopics-downloader:/app/output.md .
-docker cp examtopics-downloader:/app/saved-links.txt .
-docker rm examtopics-downloader
-```
+# Example: Download Cisco AWS 200-301 questions
+go run ./cmd/main.go -p cisco -s 200-301
 
-### Using Dockerfile
-
-1. `git clone https://github.com/thatonecodes/examtopics-downloader` and make sure docker is installed on your system.
-2. Run `docker build -t examtopics-dl . && docker run --rm examtopics-dl -p google -s devops -save-links -o output.md`
-3. After setup, it will give you a list of exams with the `cisco` provider.
-
-### Building from Source
-
-1. First, you must install [Golang >= 1.24](https://go.dev/doc/install) from the offical website.
-2. Then, run `git clone https://github.com/thatonecodes/examtopics-downloader` in your terminal to clone the repo.
-3. `cd` into the directory: `cd examtopics-downloader`
-4. You can now run: `go run ./cmd/main.go -p cisco -exams`
-
-go run ./cmd/main.go -p amazon -exams
-
-(there will be compiled binaries in the future)
-
-## Command Line Arguments
-
-```
-Each command line argument you can provide when running the program:
-
-  -c	Optionally include all the comment/discussion text
-  -exams
-    	Optionally show all the possible exams for your selected provider and exit
-  -no-cache
-    	Optional argument, set to disable looking through cached data on github
-  -o string
-    	Optional path of the file where the data will be outputted (default "examtopics_output.md")
-  -p string
-    	Name of the exam provider (default -> google) (default "google")
-  -s string
-    	String to grep for in discussion links (required)
-  -save-links
-    	Optional argument to save unique links to questions
-  -t string
-    	Optional argument to make cached requests faster to gh api
-  -type string
-    	Optionally include file type (default -> .md) (default "md")
-```
-
-## Possible Arguments List
-
-### Exam Providers, `-p`
-
-| Provider (-p)    | View Exams                                                                     | Notes     |
-| ---------------- | ------------------------------------------------------------------------------ | --------- |
-| amazon           | [Amazon Exams](https://www.examtopics.com/exams/amazon/)                       | AWS Certs |
-| cisco            | [Cisco Exams](https://www.examtopics.com/exams/cisco/)                         |           |
-| comptia          | [CompTIA Exams](https://www.examtopics.com/exams/comptia/)                     |           |
-| salesforce       | [Salesforce Exams](https://www.examtopics.com/exams/salesforce/)               |           |
-| fortinet         | [Fortinet Exams](https://www.examtopics.com/exams/fortinet/)                   |           |
-| juniper          | [Juniper Exams](https://www.examtopics.com/exams/juniper/)                     |           |
-| isaca            | [ISACA Exams](https://www.examtopics.com/exams/isaca/)                         |           |
-| vmware           | [VMware Exams](https://www.examtopics.com/exams/vmware/)                       |           |
-| isc2             | [ISC2 Exams](https://www.examtopics.com/exams/isc2/)                           | CISSP etc |
-| servicenow       | [ServiceNow Exams](https://www.examtopics.com/exams/servicenow/)               |           |
-| google           | [Google Exams](https://www.examtopics.com/exams/google/)                       |           |
-| microsoft        | [Microsoft Exams](https://www.examtopics.com/exams/microsoft/)                 |           |
-| ec-council       | [EC-Council Exams](https://www.examtopics.com/exams/ec-council/)               | CEH etc   |
-| oracle           | [Oracle Exams](https://www.examtopics.com/exams/oracle/)                       |           |
-| paloaltonetworks | [Palo Alto Networks Exams](https://www.examtopics.com/exams/paloaltonetworks/) |           |
-
-> [!NOTE]  
-> The more the amount of exams/discussion the provider has, the longer it will take to scrape through the exams.
-
-### `-save-links` && `-output-save-links`
-
-This is a bool flag, so the default is that it's set to `false`, deactivated. If `-save-links` is false `-output-save-links` will do nothing.
-`-output-save-links` is a `string` which includes the output path for the saved links, default is `saved-links.txt`.
-
-### Grep String, `-s`
-
-The `-s` argument can take an exam ID (ex. 200-301) or a word, such as "devops". for example:
-
-```bash
+# Example: Get all exams from Google containing "devops"
 go run ./cmd/main.go -p google -s devops
-
-go run ./cmd/main.go -p amazon -s generative-ai-developer
 ```
 
-would get all exams from the `google` provider containing the string `devops`.
+### 2. Batch Downloader (`process_all/main.go`)
 
-### Comments and output, `-c` && `-o`
-
-The `-c` argument is another bool flag, so it is defaultly set to false(as it creates a lot of noise in the `.md` file), but you can include it by adding the flag.
-`-o` is the output path, based on `os.create(path)`, in the current working directory.
-
-### Exams output, `-exams`
-
-This argument will display output defaulted to such as and exit immediately.
-
-```
-Exams for provider 'google'
-
-https://www.examtopics.com/exams/google/adwords-fundamentals/
-https://www.examtopics.com/exams/google/associate-android-developer/
-https://www.examtopics.com/exams/google/associate-cloud-engineer/
-https://www.examtopics.com/exams/google/associate-data-practitioner/
-https://www.examtopics.com/exams/google/associate-google-workspace-administrator/
-https://www.examtopics.com/exams/google/cloud-digital-leader/
-https://www.examtopics.com/exams/google/display-advertising/
-https://www.examtopics.com/exams/google/google-analytics/
-https://www.examtopics.com/exams/google/gsuite/
-https://www.examtopics.com/exams/google/individual-qualification/
-https://www.examtopics.com/exams/google/mobile-advertising/
-https://www.examtopics.com/exams/google/professional-chromeos-administrator/
-https://www.examtopics.com/exams/google/professional-cloud-architect/
-https://www.examtopics.com/exams/google/professional-cloud-database-engineer/
-https://www.examtopics.com/exams/google/professional-cloud-developer/
-https://www.examtopics.com/exams/google/professional-cloud-devops-engineer/
-https://www.examtopics.com/exams/google/professional-cloud-network-engineer/
-https://www.examtopics.com/exams/google/professional-cloud-security-engineer/
-https://www.examtopics.com/exams/google/professional-collaboration-engineer/
-https://www.examtopics.com/exams/google/professional-data-engineer/
-https://www.examtopics.com/exams/google/professional-google-workspace-administrator/
-https://www.examtopics.com/exams/google/professional-machine-learning-engineer/
-https://www.examtopics.com/exams/google/search-advertising/
-https://www.examtopics.com/exams/google/shopping-advertising/
-https://www.examtopics.com/exams/google/video-advertising/
-```
-
-### Token Input, `-t`
-
-When you add you `Github` PAT, it allows for more requests to the API, (up to 5000) which is needed when scraping bigger things.
-The cached data helps you access big dumps faster.
-
-### No Cache Arg, `-no-cache`
-
-When you add this argument, it tells the program to ignore the cached `Github` repoitories of updated exam info, however the scraper will take longer than the cache.
-Useful when wanting to scrape realtime data.
-
-### File Type, `-type`
-
-When you use the `-type` argument, it tells the program to convert the default filetype of `.md` files to the option of your choice.  
-Currently we have these types supported:  
-- `html` -> generates `examtopics_output.html`
-- `pdf` -> generates `examtopics_output.pdf`
-- `txt` -> generates `examtopics_output.txt`
-
-> [!NOTE]  
-> Files are kept in same/similar format as you would see in the `.md` file, for formatting changes, use other arguments.
-
-## [For outputted file examples, see the examples folder](examples/google_devops.md)
-
-## Demo
-
-So, you have installed `go` on your system, and you're inside of the working directory. Let's say you would like the questions for the cisco exam 200-301.
-
-Open your terminal and run:
+The `process_all` module is engineered for downloading entire directories of exams from a specific provider in one execution. It completely organizes files into isolated folders (e.g., `data/amazon/`) and provides three robust ways to supply the exams list.
 
 ```bash
-go run . -p cisco -s 200-301
+cd cmd/process_all
+go build -o process_all .
 ```
 
-Note that you can put the id as the string to look for, as the program is compatible this way also.
-
-After waiting a few moments, you would see the output end with:
-
+#### Method A: Inline Arguments
+Supply slugs directly via the CLI command.
 ```bash
-Successfully saved output to {OUTPUT_LOCATION}.
+./process_all -p google az-900 az-104 dp-203
 ```
 
-If so, hooray, you have successfully saved all/most of the questions in a `.md` file!
-The format would be such as (older, only scraping format):
-
-```
-----------------------------------------
-
-## Exam 200-301 topic 1 question 532 discussion
-
-Actual exam question from
-
-Cisco's
-200-301
-
-Question #: 532
-Topic #: 1
-
-[All 200-301 Questions]
-
-Refer to the exhibit. An engineer configured NAT translations and has verified that the configuration is correct. Which IP address is the source IP after the NAT has taken place?
-Suggested Answer: D 🗳️
-
-A. 10.4.4.4
-
-B. 10.4.4.5
-
-C. 172.23.103.10
-
-D. 172.23.104.4
-
-**Answer: D**
-
-**Timestamp: Jan. 5, 2021, 9:48 p.m.**
-
-[View on ExamTopics](https://www.examtopics.com/discussions/cisco/view/41599-exam-200-301-topic-1-question-532-discussion/)
-
-----------------------------------------
+#### Method B: Exam List File (`-exams`)
+Pass a simple text file containing one exam slug per line.
+```bash
+./process_all -p google -exams ../../input/google_exams.txt
 ```
 
-# ToDo
-- code gen json file
-- convert image to string
+#### Method C: CSV Import (`-csv`)
+Process large certification mappings from a structured CSV.
+```bash
+./process_all -p microsoft -csv ../../input/microsoft_cert.csv
+```
+
+**Output Structure Example:**
+```text
+data/
+└── google/
+    ├── associate-cloud-engineer.md
+    ├── professional-data-engineer.md
+    └── links/
+        ├── associate-cloud-engineer-link.txt
+        └── professional-data-engineer-link.txt
+```
+
+---
+
+## ⚙️ Command Line Arguments Reference
+
+### General Arguments (`main.go`)
+
+| Flag | Description |
+| ---- | ----------- |
+| `-p` | Name of the exam provider (e.g., `google`, `amazon`, `microsoft`) |
+| `-s` | Search string/slug to grep for in discussion links (required for `main.go`) |
+| `-o` | Output file path (Default: `examtopics_output.md`) |
+| `-type` | Output file format: `md`, `pdf`, `html`, `txt` |
+| `-c` | Include community comments and discussion texts *(Boolean)* |
+| `-save-links`| Save unique question source links to a text file *(Boolean)* |
+| `-t` | Your GitHub Personal Access Token (PAT). Substantially increases API limits for cache retrieval |
+| `-no-cache` | Disables checking the GitHub cache and forces a manual real-time scrape *(Boolean)* |
+| `-exams` | Lists all available exams for the selected provider and exits |
+
+### Batch processing Arguments (`process_all`)
+
+| Flag | Description |
+| ---- | ----------- |
+| `-p` | Name of the provider |
+| `-exams` | Path to a text file containing exam slugs (One per line) |
+| `-csv` | Path to a CSV file containing target exams |
+| `-output-dir`| Custom directory to save results. Defaults to `data/<provider>/` |
+| `-sleep` | Sleep interval (in seconds) between downloading exams to prevent rate limits. Default is `3` |
+
+---
+
+## 🌐 Supported Providers
+
+Check exams dynamically with `go run ./cmd/main.go -p <provider> -exams`. Supported networks include but are not limited to:
+
+- `amazon` *(AWS)*
+- `cisco`
+- `comptia`
+- `microsoft`
+- `google`
+- `salesforce`
+- `vmware`
+- `isaca`
+- `isc2`
+- `fortinet`
+- `servicenow`
+- `juniper`
+
+> [!CAUTION]
+> The more expansive a provider's database, the longer the manual scrape (`-no-cache`) will take. We recommend providing a `-t <GITHUB_TOKEN>` for significantly faster cache downloads.
+
+---
+
+## 📝 Roadmap
+
+- [ ] Automatic JSON generation schema
+- [ ] Integration of Image to Text Conversion (OCR)
