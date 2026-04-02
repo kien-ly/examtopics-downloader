@@ -1,11 +1,11 @@
 package tests
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
-	"path/filepath"
-	"fmt"
 	"testing"
 
 	"examtopics-downloader/internal/fetch"
@@ -14,6 +14,7 @@ import (
 )
 
 var links []models.QuestionData
+
 func TestGetAllPages(t *testing.T) {
 	links = fetch.GetAllPages("lpi", "010-160")
 	if len(links) == 0 {
@@ -65,8 +66,8 @@ func TestWriteDataVariants(t *testing.T) {
 	baseName := "write_test"
 
 	tests := []struct {
-		fileType string
-		ext      string
+		fileType     string
+		ext          string
 		checkContent bool
 	}{
 		{"md", ".md", true},
@@ -77,7 +78,7 @@ func TestWriteDataVariants(t *testing.T) {
 
 	for _, tt := range tests {
 		outputPath := fmt.Sprintf("%s.%s", baseName, tt.fileType)
-		utils.WriteData(links, outputPath, true, tt.fileType)
+		utils.WriteData(links, outputPath, true, tt.fileType, true)
 
 		info, err := os.Stat(outputPath)
 		if err != nil {

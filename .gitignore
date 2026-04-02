@@ -1,7 +1,7 @@
 examtopics_output.md
 examtopics_output.html
 examtopics_output.pdf
-*.txt
+# *.txt
 env/
 !env/*.md
 !examples/*

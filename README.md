@@ -54,6 +54,8 @@ docker rm examtopics-downloader
 3. `cd` into the directory: `cd examtopics-downloader`
 4. You can now run: `go run ./cmd/main.go -p cisco -exams`
 
+go run ./cmd/main.go -p amazon -exams
+
 (there will be compiled binaries in the future)
 
 ## Command Line Arguments
@@ -115,7 +117,9 @@ This is a bool flag, so the default is that it's set to `false`, deactivated. If
 The `-s` argument can take an exam ID (ex. 200-301) or a word, such as "devops". for example:
 
 ```bash
-go run . -p google -s devops
+go run ./cmd/main.go -p google -s devops
+
+go run ./cmd/main.go -p amazon -s generative-ai-developer
 ```
 
 would get all exams from the `google` provider containing the string `devops`.

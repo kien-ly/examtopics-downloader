@@ -39,7 +39,7 @@ func main() {
 	if !*noCache {
 		links := fetch.GetCachedPages(*provider, *grepStr, *token)
 		if len(links) > 0 {
-			utils.WriteData(links, *outputPath, *commentBool, *fileType)
+			utils.WriteData(links, *outputPath, *commentBool, *fileType, false)
 			fmt.Printf("Successfully saved cached output to %s (filetype: %s).\n", *outputPath, *fileType)
 			os.Exit(0)
 		}
@@ -51,6 +51,6 @@ func main() {
 	if *saveUrls {
 		utils.SaveLinks(*outputSaveLinks, links)
 	}
-	utils.WriteData(links, *outputPath, *commentBool, *fileType)
+	utils.WriteData(links, *outputPath, *commentBool, *fileType, false)
 	fmt.Printf("Successfully saved output to %s (filetype: %s).\n", *outputPath, *fileType)
 }

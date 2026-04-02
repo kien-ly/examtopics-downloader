@@ -47,8 +47,7 @@ func getDataFromLink(link string) *models.QuestionData {
 	}
 }
 
-var counter int = 0 //start counter at 1
-func getJSONFromLink(link string) []*models.QuestionData {
+func getJSONFromLink(link string, counter *int) []*models.QuestionData {
 	initialResp := FetchURL(link, *client)
 
 	var githubResp map[string]any
@@ -99,10 +98,10 @@ func getJSONFromLink(link string) []*models.QuestionData {
 		}
 
 		name := utils.GetNameFromLink(link)
-		counter++
+		*counter++
 
 		questions = append(questions, &models.QuestionData{
-			Title:        "Examtopics " + strings.ReplaceAll(name, ".json?ref=main", "") + " question #" + strconv.Itoa(counter),
+			Title:        "Examtopics " + strings.ReplaceAll(name, ".json?ref=main", "") + " question #" + strconv.Itoa(*counter),
 			Header:       q.QuestionText,
 			Content:      strings.Join(q.QuestionImages, "\n"),
 			Questions:    []string{choicesHeader},
@@ -156,18 +155,48 @@ func fetchAllPageLinksConcurrently(providerName, grepStr string, numPages, concu
 	return all
 }
 
-// Main concurrent page scraping logic
-func GetAllPages(providerName string, grepStr string) []models.QuestionData {
+// GetAllLinksForProvider fetches ALL discussion links for a provider in one pass.
+// Returns a map of slug -> []link, so each exam's links can be looked up without re-fetching.
+func GetAllLinksForProvider(providerName string) (map[string][]string, error) {
 	baseURL := fmt.Sprintf("https://www.examtopics.com/discussions/%s/", providerName)
 	numPages := getMaxNumPages(baseURL)
-	fmt.Printf("Fetching %d pages for provider '%s'\n", numPages, providerName)
+	fmt.Printf("Fetching %d discussion pages for provider '%s'...\n", numPages, providerName)
 
-	allLinks := fetchAllPageLinksConcurrently(providerName, grepStr, numPages, constants.MaxConcurrentRequests)
-
+	// Fetch all links without filtering by slug (empty grepStr)
+	allLinks := fetchAllPageLinksConcurrently(providerName, "", numPages, constants.MaxConcurrentRequests)
 	unique := utils.DeduplicateLinks(allLinks)
-	sortedLinks := utils.SortLinksByQuestionNumber(unique)
 
-	fmt.Printf("Found %d unique matching links:\n", len(sortedLinks))
+	fmt.Printf("Found %d unique discussion links for provider '%s'\n", len(unique), providerName)
+
+	// Group links by slug (extracted from URL path)
+	linksBySlug := make(map[string][]string)
+	for _, link := range unique {
+		linksBySlug[""] = append(linksBySlug[""], link)
+	}
+
+	return linksBySlug, nil
+}
+
+// FilterLinksBySlug filters pre-fetched links to only those matching the given slug.
+func FilterLinksBySlug(allLinks []string, slug string) []string {
+	var matched []string
+	for _, link := range allLinks {
+		if utils.GrepString(link, slug) {
+			matched = append(matched, link)
+		}
+	}
+	return matched
+}
+
+// ScrapeLinks scrapes question data from a list of discussion links concurrently.
+func ScrapeLinks(links []string) []models.QuestionData {
+	sortedLinks := utils.SortLinksByQuestionNumber(links)
+
+	if len(sortedLinks) == 0 {
+		return nil
+	}
+
+	fmt.Printf("Scraping %d links...\n", len(sortedLinks))
 
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, constants.MaxConcurrentRequests)
@@ -199,15 +228,23 @@ func GetAllPages(providerName string, grepStr string) []models.QuestionData {
 
 	wg.Wait()
 	bar.Finish()
-	// Filter out nil entries
-	var finalData []models.QuestionData
-	for _, entry := range results {
-		if entry != nil {
-			finalData = append(finalData, *entry)
-		}
-	}
-
 	fmt.Printf("Scraping completed in %s.\n", utils.TimeSince(startTime))
 
-	return finalData
+	return utils.FilterOutNilData(results)
+}
+
+// Main concurrent page scraping logic (kept for backwards compatibility with cmd/main.go)
+func GetAllPages(providerName string, grepStr string) []models.QuestionData {
+	baseURL := fmt.Sprintf("https://www.examtopics.com/discussions/%s/", providerName)
+	numPages := getMaxNumPages(baseURL)
+	fmt.Printf("Fetching %d pages for provider '%s'\n", numPages, providerName)
+
+	allLinks := fetchAllPageLinksConcurrently(providerName, grepStr, numPages, constants.MaxConcurrentRequests)
+
+	unique := utils.DeduplicateLinks(allLinks)
+	sortedLinks := utils.SortLinksByQuestionNumber(unique)
+
+	fmt.Printf("Found %d unique matching links:\n", len(sortedLinks))
+
+	return ScrapeLinks(sortedLinks)
 }

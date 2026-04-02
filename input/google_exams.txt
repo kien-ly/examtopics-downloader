@@ -1,0 +1,16 @@
+# Google Cloud Certification Exams
+# Mỗi dòng: slug hoặc slug:code
+# Dòng bắt đầu bằng # là comment
+
+# Associate
+associate-cloud-engineer
+cloud-digital-leader
+
+# Professional
+professional-cloud-architect
+professional-data-engineer
+professional-cloud-developer
+professional-cloud-network-engineer
+professional-cloud-security-engineer
+professional-cloud-devops-engineer
+professional-machine-learning-engineer

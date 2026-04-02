@@ -1,0 +1,7 @@
+# NVIDIA Certification Exams
+
+nca-aiio
+nca-genl
+nca-genm
+ncp-aai
+ncp-aio

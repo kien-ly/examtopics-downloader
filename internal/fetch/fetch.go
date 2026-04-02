@@ -173,12 +173,13 @@ func GetCachedPages(providerName string, grepStr string, token string) []models.
 
 	var wg sync.WaitGroup
 	dataChan := make(chan models.QuestionData)
+	counter := 0
 
 	for _, link := range links {
 		wg.Add(1)
 		go func(link string) {
 			defer wg.Done()
-			dataList := getJSONFromLink(link)
+			dataList := getJSONFromLink(link, &counter)
 			if dataList == nil {
 				return
 			}

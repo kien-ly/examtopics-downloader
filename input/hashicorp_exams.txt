@@ -1,0 +1,6 @@
+# HashiCorp Certification Exams
+
+terraform-associate
+terraform-associate-003
+terraform-associate-004
+vault-associate-002

@@ -1,0 +1,19 @@
+# Amazon AWS Certification Exams
+
+# Foundational
+clf-c02
+
+# Associate
+saa-c03:SAA-C03
+soa-c02:SOA-C02
+dva-c02:DVA-C02
+
+# Professional
+sap-c02:SAP-C02
+dop-c02:DOP-C02
+
+# Specialty
+ans-c01:ANS-C01
+scs-c02:SCS-C02
+mls-c01:MLS-C01
+das-c01:DAS-C01

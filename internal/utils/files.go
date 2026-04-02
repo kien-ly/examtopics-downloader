@@ -3,11 +3,11 @@ package utils
 import (
 	"bufio"
 	"bytes"
-	"regexp"
 	"examtopics-downloader/internal/models"
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/mandolyte/mdtopdf"
@@ -31,7 +31,7 @@ func writeFile(filename string, content any) {
 	}
 }
 
-func WriteData(dataList []models.QuestionData, outputPath string, commentBool bool, fileType string) {
+func WriteData(dataList []models.QuestionData, outputPath string, commentBool bool, fileType string, autoDelete bool) {
 	file := CreateFile(outputPath)
 	defer file.Close()
 
@@ -83,7 +83,7 @@ func WriteData(dataList []models.QuestionData, outputPath string, commentBool bo
 			log.Printf("mdtopdf conversion failed: %v", err)
 			return
 		}
-		deleteMarkdownFile(outputPath)
+		deleteMarkdownFile(outputPath, autoDelete)
 	case "html":
 		mdBytes, err := os.ReadFile(outputPath)
 		if err != nil {
@@ -103,7 +103,7 @@ func WriteData(dataList []models.QuestionData, outputPath string, commentBool bo
 			log.Printf("failed to write html file: %v", err)
 			return
 		}
-		deleteMarkdownFile(outputPath)
+		deleteMarkdownFile(outputPath, autoDelete)
 	case "text":
 		mdBytes, err := os.ReadFile(outputPath)
 		if err != nil {
@@ -119,7 +119,7 @@ func WriteData(dataList []models.QuestionData, outputPath string, commentBool bo
 			log.Printf("failed to write text file: %v", err)
 			return
 		}
-		deleteMarkdownFile(outputPath)
+		deleteMarkdownFile(outputPath, autoDelete)
 	}
 }
 
@@ -131,7 +131,13 @@ func mdToHTML(md []byte) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func deleteMarkdownFile(filePath string) {
+func deleteMarkdownFile(filePath string, autoDelete bool) {
+	if autoDelete {
+		fmt.Println("Auto-deleting markdown file...")
+		os.Remove(filePath)
+		return
+	}
+
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Delete Markdown file after conversion? (y/n): ")
 	input, _ := reader.ReadString('\n')
